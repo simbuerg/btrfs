@@ -1,0 +1,38 @@
+#!/usr/bin/env python
+from plumbum import cli
+from os import path
+
+class Btrfs(cli.Application):
+    """ Various pretty-printers for btrfs diagnostic information """
+    def main(self):
+        if not self.nested_command:
+            print "No command given"
+            return 1
+
+@Btrfs.subcommand("quota")
+class Quota(cli.Application):
+    def main(self, fspath):
+        if path.exists(fspath):
+            from plumbum.cmd import btrfs
+            qgroups = btrfs("qgroup", "show", "--human-readable", fspath)
+            subvols = btrfs("subvolume", "list" , "-t", fspath)
+
+            join_qgroups_with_subvols(qgroups.split("\n"), subvols.split("\n"))
+
+
+def join_qgroups_with_subvols(qgroups, subvols):
+    tqgroups = [ l.split() for l in qgroups ]
+    tqgroups = [ x for x in tqgroups if len(x) == 3 ]
+    tqgroups = [ [x[0][2:], x[1], x[2]] for x in tqgroups ]
+
+    tsubvols = [ l.split() for l in subvols]
+    tsubvols = [ x for x in tsubvols if len(x) > 1 ]
+
+    joined = [ y[3:]+x[1:] for x in tqgroups for y in tsubvols if x[0] == y[0] ]
+
+    print "\n".join([ "\t".join(l) for l in joined ])
+
+
+
+if __name__ == "__main__":
+    Btrfs.run()
