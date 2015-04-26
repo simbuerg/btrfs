@@ -12,11 +12,21 @@ class Btrfs(cli.Application):
 
 @Btrfs.subcommand("quota")
 class Quota(cli.Application):
+    """ Join 'btrfs qgroup show' output with 'btrfs subvolume list' """
+
+    subvol_only = cli.Flag(["-o"],
+                           help="print only subvolumes below specified path",
+                           default = False)
+
     def main(self, fspath):
         if path.exists(fspath):
             from plumbum.cmd import btrfs
+            list_flags = []
+            if (self.subvol_only):
+                list_flags = list_flags + ["-o"]
+
             qgroups = btrfs("qgroup", "show", "--human-readable", fspath)
-            subvols = btrfs("subvolume", "list" , "-t", fspath)
+            subvols = btrfs("subvolume", "list" , "-t", list_flags, fspath)
 
             join_qgroups_with_subvols(qgroups.split("\n"), subvols.split("\n"))
 
