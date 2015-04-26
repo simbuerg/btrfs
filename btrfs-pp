@@ -4,6 +4,7 @@ from os import path
 
 class Btrfs(cli.Application):
     """ Various pretty-printers for btrfs diagnostic information """
+
     def main(self):
         if not self.nested_command:
             print "No command given"
