@@ -41,7 +41,8 @@ def join_qgroups_with_subvols(qgroups, subvols):
 
     joined = [ y[3:]+x[1:] for x in tqgroups for y in tsubvols if x[0] == y[0] ]
 
-    print "\n".join([ "\t".join(l) for l in joined ])
+    header = [["Subvolume", "Referenced", "Exclusive"]]
+    print "\n".join([ "\t".join(l) for l in header + joined ])
 
 
 
